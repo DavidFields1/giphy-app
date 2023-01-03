@@ -1,0 +1,27 @@
+<div class="bg-dark border-right p-3" id="sidebar">
+    <h3 class="text-light">
+        Gifs App
+    </h3>
+
+    <hr class="text-light">
+
+    <a 
+        href="#" 
+        *ngIf="historial.length > 0" 
+        class="link-secondary text-decoration-none d-block mb-2"
+        (click)="borrarHistorial()"
+    >
+        Borrar historial
+    </a>
+
+    <div class="list-group list-reset">
+        <a 
+            href="#" 
+            class="list-group-item list-group-item-action" 
+            *ngFor="let query of historial"
+            (click)="setHistorialItem($event)"
+        >
+            {{ query | titlecase }}
+        </a>
+    </div>
+</div>
