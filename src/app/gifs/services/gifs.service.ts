@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { SearchGifsResponse, Gif } from 'src/app/interface/service.interface';
 
 @Injectable({
@@ -7,8 +7,10 @@ import { SearchGifsResponse, Gif } from 'src/app/interface/service.interface';
 })
 export class GifsService {
   private API_KEY: string = 'XLFc7pREgycs8vw94jO7KCaySGOe92aS';
+  private API_LIMIT: number = 10;
+  private API_URL: string = 'https://api.giphy.com/v1/gifs';
   private _historial: string[] = [];
-  private endpointStart: string = `https://api.giphy.com/v1/gifs/trending?api_key=${this.API_KEY}&limit=10`;
+  private endpointTrending: string = `${this.API_URL}/trending?api_key=${this.API_KEY}&limit=${this.API_LIMIT}`;
   public resultados: Gif[] = [];
 
   get historial() {
@@ -17,14 +19,21 @@ export class GifsService {
 
   constructor(private http: HttpClient) {
     this._historial = JSON.parse(localStorage.getItem('historial')!) || [];
-    this.http.get<SearchGifsResponse>(this.endpointStart).subscribe((resp) => {
-      this.resultados = [...resp.data];
-    });
+    this.http
+      .get<SearchGifsResponse>(this.endpointTrending)
+      .subscribe((resp) => {
+        this.resultados = [...resp.data];
+      });
   }
 
   buscarGifs(query: string) {
+    const params = new HttpParams()
+      .set('api_key', this.API_KEY)
+      .set('q', query)
+      .set('limit', this.API_LIMIT);
+    const endpointSearch = `${this.API_URL}/search`;
+
     query = query.trim().toLowerCase();
-    const endpointSearch = `https://api.giphy.com/v1/gifs/search?api_key=${this.API_KEY}&q=${query}&limit=10`;
 
     if (this._historial.includes(query)) {
       const idxFound = this._historial.indexOf(query);
@@ -36,9 +45,11 @@ export class GifsService {
 
     localStorage.setItem('historial', JSON.stringify(this._historial));
 
-    this.http.get<SearchGifsResponse>(endpointSearch).subscribe((resp) => {
-      this.resultados = [...resp.data];
-    });
+    this.http
+      .get<SearchGifsResponse>(endpointSearch, { params })
+      .subscribe((resp) => {
+        this.resultados = [...resp.data];
+      });
   }
 
   borrarHistorial() {
